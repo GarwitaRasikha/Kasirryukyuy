@@ -9,7 +9,31 @@
 	include $view;
 	$lihat = new view($config);
 	$toko = $lihat -> toko();
-	$hsl = $lihat -> penjualan();
+	
+	$id_member = $_SESSION['admin']['id_member'];
+	
+	// Dapatkan tanggal_input terakhir dari nota untuk kasir ini
+	$sql_latest = "SELECT tanggal_input FROM nota WHERE id_member = ? ORDER BY id_nota DESC LIMIT 1";
+	$stmt_latest = $config->prepare($sql_latest);
+	$stmt_latest->execute([$id_member]);
+	$latest = $stmt_latest->fetch();
+	
+	$hsl = [];
+	$total_belanja = 0;
+	if ($latest) {
+		$latest_tanggal = $latest['tanggal_input'];
+		$sql_items = "SELECT nota.*, barang.nama_barang, barang.harga_jual as original_harga_jual
+					  FROM nota 
+					  LEFT JOIN barang ON nota.id_barang = barang.id_barang 
+					  WHERE nota.id_member = ? AND nota.tanggal_input = ?";
+		$stmt_items = $config->prepare($sql_items);
+		$stmt_items->execute([$id_member, $latest_tanggal]);
+		$hsl = $stmt_items->fetchAll();
+		
+		foreach ($hsl as $item) {
+			$total_belanja += $item['total'];
+		}
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -152,21 +176,33 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $no=1; foreach($hsl as $isi){?>
+                    <?php $no=1; foreach($hsl as $isi){
+                        $original_total = (int)$isi['original_harga_jual'] * (int)$isi['jumlah'];
+                        $discount = $original_total - (int)$isi['total'];
+                    ?>
                     <tr>
-                        <td class="item-name"><?php echo $isi['nama_barang'];?></td>
+                        <td class="item-name">
+                            <?php echo $isi['nama_barang'];?>
+                            <?php if ($discount > 0) { ?>
+                                <br><small class="text-danger" style="font-size: 0.75rem;">(Diskon: -Rp.<?php echo number_format($discount);?>)</small>
+                            <?php } ?>
+                        </td>
                         <td class="item-qty"><?php echo $isi['jumlah'];?></td>
-                        <td class="item-total">Rp.<?php echo number_format($isi['total']);?></td>
+                        <td class="item-total">
+                            <?php if ($discount > 0) { ?>
+                                <span class="text-decoration-line-through text-muted" style="font-size: 0.8rem;">Rp.<?php echo number_format($original_total);?></span><br>
+                            <?php } ?>
+                            Rp.<?php echo number_format($isi['total']);?>
+                        </td>
                     </tr>
                     <?php $no++; }?>
                 </tbody>
             </table>
 
             <div class="receipt-summary">
-                <?php $hasil = $lihat -> jumlah(); ?>
                 <div class="row">
                     <div class="col-6">Total Belanja</div>
-                    <div class="col-6 text-end">Rp.<?php echo number_format($hasil['bayar']);?></div>
+                    <div class="col-6 text-end">Rp.<?php echo number_format($total_belanja);?></div>
                 </div>
                 <div class="row">
                     <div class="col-6">Tunai</div>

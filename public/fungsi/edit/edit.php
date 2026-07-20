@@ -60,6 +60,36 @@ if (!empty($_SESSION['admin'])) {
         $satuan = htmlentities($_POST['satuan']);
         $stok = htmlentities($_POST['stok']);
         $tgl = htmlentities($_POST['tgl']);
+        $deskripsi = trim(htmlentities($_POST['deskripsi']));
+        $foto_lama = !empty($_POST['foto_lama']) ? $_POST['foto_lama'] : null;
+        $nama_file = $foto_lama;
+
+        if (!empty($_FILES['foto']['name'])) {
+            $allowedTypes = [
+                'image/png'   => 'png',
+                'image/jpeg'  => 'jpg',
+                'image/gif'   => 'gif',
+                'image/jpg'   => 'jpeg',
+                'image/webp'  => 'webp'
+            ];
+            $filepath = $_FILES['foto']['tmp_name'];
+            if (file_exists($filepath)) {
+                $fileinfo = finfo_open(FILEINFO_MIME_TYPE);
+                $filetype = finfo_file($fileinfo, $filepath);
+                if (in_array($filetype, array_keys($allowedTypes)) && $_FILES['foto']['error'] === 0 && round($_FILES['foto']['size'] / 1024) <= 4096) {
+                    $dir = '../../assets/img/barang/';
+                    if (!is_dir($dir)) {
+                        mkdir($dir, 0777, true);
+                    }
+                    $nama_file = time() . '_' . basename($_FILES['foto']['name']);
+                    if (move_uploaded_file($filepath, $dir . $nama_file)) {
+                        if ($foto_lama && file_exists($dir . $foto_lama)) {
+                            unlink($dir . $foto_lama);
+                        }
+                    }
+                }
+            }
+        }
 
         $data[] = $kategori;
         $data[] = $nama;
@@ -69,9 +99,12 @@ if (!empty($_SESSION['admin'])) {
         $data[] = $satuan;
         $data[] = $stok;
         $data[] = $tgl;
+        $data[] = $nama_file;
+        $data[] = $deskripsi;
         $data[] = $id;
+        
         $sql = 'UPDATE barang SET id_kategori=?, nama_barang=?, merk=?, 
-				harga_beli=?, harga_jual=?, satuan_barang=?, stok=?, tgl_update=?  WHERE id_barang=?';
+				harga_beli=?, harga_jual=?, satuan_barang=?, stok=?, tgl_update=?, gambar=?, deskripsi=? WHERE id_barang=?';
         $row = $config -> prepare($sql);
         $row -> execute($data);
         echo '<script>window.location="../../dashboard.php?page=barang/edit&barang='.$id.'&success=edit-data"</script>';
@@ -191,8 +224,20 @@ if (!empty($_SESSION['admin'])) {
         $hasil = $row_tampil -> fetch();
 
         if ($hasil['stok'] > $jumlah) {
-            $jual = $hasil['harga_jual'];
-            $total = $jual * $jumlah;
+            // Check for active promotions
+            $today = date('Y-m-d');
+            $sql_promo = "SELECT * FROM promo WHERE status_promo = 1 AND tanggal_mulai <= ? AND tanggal_selesai >= ? AND (id_barang = ? OR id_barang IS NULL) ORDER BY id_barang DESC, nilai_promo DESC LIMIT 1";
+            $row_promo = $config->prepare($sql_promo);
+            $row_promo->execute([$today, $today, $id_barang]);
+            $promo = $row_promo->fetch();
+
+            $harga_jual = $hasil['harga_jual'];
+            if ($promo) {
+                $harga_jual = $harga_jual - $promo['nilai_promo'];
+                if ($harga_jual < 0) $harga_jual = 0;
+            }
+
+            $total = $harga_jual * $jumlah;
             $data1[] = $jumlah;
             $data1[] = $total;
             $data1[] = $id;
@@ -219,7 +264,7 @@ if (!empty($_SESSION['admin'])) {
         $row -> execute();
         $hasil1= $row -> fetchAll();
         ?>
-		<table class="table table-stripped" width="100%" id="example2">
+		<table class="table table-stripped align-middle" width="100%" id="example2">
 			<tr>
 				<th>ID Barang</th>
 				<th>Nama Barang</th>
@@ -227,20 +272,86 @@ if (!empty($_SESSION['admin'])) {
 				<th>Harga Jual</th>
 				<th>Aksi</th>
 			</tr>
-		<?php foreach ($hasil1 as $hasil) {?>
+		<?php foreach ($hasil1 as $hasil) {
+            $today = date('Y-m-d');
+            $sql_promo = "SELECT * FROM promo WHERE status_promo = 1 AND tanggal_mulai <= ? AND tanggal_selesai >= ? AND (id_barang = ? OR id_barang IS NULL) ORDER BY id_barang DESC, nilai_promo DESC LIMIT 1";
+            $row_promo = $config->prepare($sql_promo);
+            $row_promo->execute([$today, $today, $hasil['id_barang']]);
+            $promo = $row_promo->fetch();
+
+            $harga_final = $hasil['harga_jual'];
+            $promo_badge = '';
+            if ($promo) {
+                $harga_final = $hasil['harga_jual'] - $promo['nilai_promo'];
+                $promo_badge = '<span class="badge bg-danger rounded-pill px-2 py-1 ms-2" style="font-size: 0.65rem;">Pot. Rp' . number_format($promo['nilai_promo'], 0, ',', '.') . '</span>';
+                if ($harga_final < 0) $harga_final = 0;
+            }
+        ?>
 			<tr>
-				<td><?php echo $hasil['id_barang'];?></td>
-				<td><?php echo $hasil['nama_barang'];?></td>
+				<td class="fw-bold" style="color: #c084fc;"><?php echo $hasil['id_barang'];?></td>
+				<td>
+                    <div class="d-flex align-items-center gap-2 text-white">
+                        <img src="<?php echo $hasil['gambar'] ? 'assets/img/barang/' . $hasil['gambar'] : 'assets/img/barang/default.png'; ?>" class="rounded" style="width: 32px; height: 32px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                        <div>
+                            <span><?php echo $hasil['nama_barang'];?></span>
+                            <?php echo $promo_badge; ?>
+                        </div>
+                    </div>
+                </td>
 				<td><?php echo $hasil['merk'];?></td>
-				<td><?php echo $hasil['harga_jual'];?></td>
+				<td>
+                    <?php if ($promo) { ?>
+                        <span class="text-white-50 text-decoration-line-through" style="font-size: 0.85rem;">Rp <?php echo number_format($hasil['harga_jual'], 0, ',', '.');?></span>
+                        <br><span class="fw-bold text-success">Rp <?php echo number_format($harga_final, 0, ',', '.');?></span>
+                    <?php } else { ?>
+                        Rp <?php echo number_format($hasil['harga_jual'], 0, ',', '.');?>
+                    <?php } ?>
+                </td>
 				<td>
 				<a href="fungsi/tambah/tambah.php?jual=jual&id=<?php echo $hasil['id_barang'];?>&id_kasir=<?php echo $_SESSION['admin']['id_member'];?>" 
-					class="btn btn-primary">
-					<i class="fa fa-shopping-cart"></i></a></td>
+					class="btn btn-primary btn-sm rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+					<i class="fa fa-shopping-cart" style="font-size: 0.8rem;"></i></a></td>
 			</tr>
 		<?php }?>
 		</table>
 <?php
+    }
+
+    if (!empty($_GET['promo'])) {
+        $id = htmlentities($_POST['id']);
+        $nama_promo = htmlentities($_POST['nama_promo']);
+        $tipe_promo = htmlentities($_POST['tipe_promo']);
+        $nilai_promo = htmlentities($_POST['nilai_promo']);
+        $tanggal_mulai = htmlentities($_POST['tanggal_mulai']);
+        $tanggal_selesai = htmlentities($_POST['tanggal_selesai']);
+        $id_barang = !empty($_POST['id_barang']) ? htmlentities($_POST['id_barang']) : null;
+        $status_promo = isset($_POST['status_promo']) ? (int)$_POST['status_promo'] : 1;
+
+        $data = [
+            $nama_promo,
+            $tipe_promo,
+            $nilai_promo,
+            $tanggal_mulai,
+            $tanggal_selesai,
+            $id_barang,
+            $status_promo,
+            $id
+        ];
+
+        $sql = 'UPDATE promo SET nama_promo=?, tipe_promo=?, nilai_promo=?, tanggal_mulai=?, tanggal_selesai=?, id_barang=?, status_promo=?, updated_at=NOW() WHERE id_promo=?';
+        $row = $config->prepare($sql);
+        $row->execute($data);
+        echo '<script>window.location="../../dashboard.php?page=promo&success=edit-data"</script>';
+    }
+
+    if (!empty($_GET['promo_toggle'])) {
+        $id = htmlentities($_GET['id']);
+        $status = (int)$_GET['status'];
+        
+        $sql = 'UPDATE promo SET status_promo=?, updated_at=NOW() WHERE id_promo=?';
+        $row = $config->prepare($sql);
+        $row->execute([$status, $id]);
+        echo '<script>window.location="../../dashboard.php?page=promo&success=edit-data"</script>';
     }
 }
 

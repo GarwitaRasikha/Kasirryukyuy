@@ -86,6 +86,46 @@
     <h3 class="fw-bold text-white mb-0">Keranjang Penjualan</h3>
 </div>
 
+@php
+    $today = date('Y-m-d');
+    $activePromos = DB::table('promo')
+        ->leftJoin('barang', 'promo.id_barang', '=', 'barang.id_barang')
+        ->where('promo.status_promo', 1)
+        ->where('promo.tanggal_mulai', '<=', $today)
+        ->where('promo.tanggal_selesai', '>=', $today)
+        ->select('promo.*', 'barang.nama_barang')
+        ->get();
+@endphp
+
+@if($activePromos->count() > 0)
+    <div class="alert border-0 rounded-4 p-4 mb-4 premium-glass-card shadow-sm" style="background: rgba(168, 85, 247, 0.08) !important; border: 1px solid rgba(168, 85, 247, 0.15) !important;">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="fa fa-percentage text-primary fs-5"></i>
+            <h5 class="fw-bold text-white mb-0">Promo Aktif Hari Ini!</h5>
+        </div>
+        <div class="row g-3">
+            @foreach($activePromos as $ap)
+                <div class="col-md-6 col-lg-4">
+                    <div class="p-3 rounded-3 bg-white bg-opacity-5 border border-white-5 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <span class="fw-bold text-white d-block mb-1" style="font-size: 0.9rem;">{{ $ap->nama_promo }}</span>
+                            <span class="text-white-50 d-block mb-2" style="font-size: 0.75rem;">
+                                Target: {{ $ap->id_barang ? $ap->nama_barang : 'Semua Barang' }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white-5">
+                            <span class="badge bg-danger rounded-pill px-2.5 py-1" style="font-size: 0.7rem;">
+                                Pot. Rp {{ number_format($ap->nilai_promo, 0, ',', '.') }}
+                            </span>
+                            <small class="text-secondary" style="font-size: 0.7rem;">Hingga: {{ date('d M Y', strtotime($ap->tanggal_selesai)) }}</small>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+
 <div class="row g-4">
     <!-- Cari Barang Card -->
     <div class="col-lg-4">

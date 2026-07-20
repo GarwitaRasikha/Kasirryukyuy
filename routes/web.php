@@ -15,4 +15,5 @@ Route::post('/login', [SiteController::class, 'authenticate'])->name('authentica
 Route::get('/register', [SiteController::class, 'registerForm'])->name('register');
 Route::post('/register', [SiteController::class, 'registerStore'])->name('register.store');
 Route::get('/dashboard', [SiteController::class, 'dashboard'])->name('dashboard');
+Route::post('/dashboard', [SiteController::class, 'dashboard']);
 Route::get('/logout', [SiteController::class, 'logout'])->name('logout');

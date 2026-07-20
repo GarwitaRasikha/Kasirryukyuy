@@ -13,6 +13,8 @@
         @include('admin.barang_edit')
     @elseif($page === 'kategori')
         @include('admin.kategori')
+    @elseif($page === 'promo')
+        @include('admin.promo')
     @elseif($page === 'jual')
         @include('admin.jual')
     @elseif($page === 'laporan')

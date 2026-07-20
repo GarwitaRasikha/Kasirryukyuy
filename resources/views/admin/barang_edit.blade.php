@@ -5,7 +5,7 @@
 </div>
 
 <div class="premium-glass-card border-0 rounded-4 p-5 mb-5">
-    <form action="/fungsi/edit/edit.php?barang=edit" method="POST">
+    <form action="/fungsi/edit/edit.php?barang=edit" method="POST" enctype="multipart/form-data">
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="mb-3">
@@ -32,6 +32,10 @@
                     <label class="form-label text-white-50">Merk Barang</label>
                     <input type="text" class="form-control" value="{{ $barang->merk }}" name="merk" required>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label text-white-50">Deskripsi Produk</label>
+                    <textarea class="form-control" name="deskripsi" rows="4" placeholder="Masukkan deskripsi produk...">{{ $barang->deskripsi }}</textarea>
+                </div>
             </div>
             
             <div class="col-md-6">
@@ -55,6 +59,17 @@
                 <div class="mb-3">
                     <label class="form-label text-white-50">Stok</label>
                     <input type="number" class="form-control" value="{{ $barang->stok }}" name="stok" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white-50 d-block">Gambar Produk</label>
+                    @if($barang->gambar)
+                        <div class="mb-2">
+                            <img src="{{ asset('assets/img/barang/' . $barang->gambar) }}" class="rounded shadow-sm" style="max-width: 120px; border: 1px solid rgba(255,255,255,0.1);">
+                            <input type="hidden" name="foto_lama" value="{{ $barang->gambar }}">
+                        </div>
+                    @endif
+                    <input type="file" class="form-control" name="foto" accept="image/*">
+                    <small class="text-white-50">Biarkan kosong jika tidak ingin mengubah gambar.</small>
                 </div>
                 <input type="hidden" name="tgl" value="{{ date('j F Y, G:i') }}">
             </div>

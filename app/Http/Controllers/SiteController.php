@@ -108,6 +108,11 @@ class SiteController extends Controller
             Session::put('role', $member->role);
             Session::put('status', $member->status);
 
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['admin'] = (array) $member;
+
             return redirect()->route('dashboard');
         }
 
@@ -120,6 +125,13 @@ class SiteController extends Controller
     {
         if (!Session::has('admin')) {
             return redirect()->route('login');
+        }
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (empty($_SESSION['admin'])) {
+            $_SESSION['admin'] = Session::get('admin');
         }
 
         $page = $request->query('page');
@@ -284,6 +296,18 @@ class SiteController extends Controller
         elseif ($page === 'kategori') {
             $data['kategori'] = DB::table('kategori')->get();
         } 
+        elseif ($page === 'promo') {
+            $data['promo'] = DB::table('promo')
+                ->leftJoin('barang', 'promo.id_barang', '=', 'barang.id_barang')
+                ->select('promo.*', 'barang.nama_barang')
+                ->get();
+            $data['barang'] = DB::table('barang')->get();
+        }
+        elseif ($page === 'promo/edit') {
+            $id = $request->query('id');
+            $data['promo'] = DB::table('promo')->where('id_promo', $id)->first();
+            $data['barang'] = DB::table('barang')->get();
+        }
         elseif ($page === 'jual') {
             // Point of Sales system data
             $data['barang'] = DB::table('barang')->get();
@@ -342,6 +366,12 @@ class SiteController extends Controller
     public function logout()
     {
         Session::forget(['admin', 'role', 'status']);
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        unset($_SESSION['admin']);
+        session_write_close();
 
         return redirect()->route('home');
     }

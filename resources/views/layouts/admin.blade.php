@@ -78,6 +78,28 @@
             background: rgba(168, 85, 247, 0.15) !important;
             color: #c084fc !important;
         }
+        
+        /* Fix sidebar submenu hover gap when collapsed */
+        @media (min-width: 768px) {
+            .sidebar.toggled .nav-item {
+                position: relative !important;
+            }
+            .sidebar.toggled .nav-item .collapse {
+                position: absolute !important;
+                left: 100% !important;
+                padding-left: 8px !important;
+                z-index: 1000 !important;
+                display: none !important;
+                width: 11rem !important;
+            }
+            .sidebar.toggled .nav-item:hover .collapse {
+                display: block !important;
+            }
+            .sidebar.toggled .nav-item .collapse .collapse-inner {
+                margin: 0 !important;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            }
+        }
     </style>
 </head>
 
@@ -111,15 +133,16 @@
                 <hr class="sidebar-divider">
 
                 <!-- Data Master Menu -->
-                <li class="nav-item {{ request('page') === 'barang' || request('page') === 'kategori' ? 'active' : '' }}">
+                <li class="nav-item {{ request('page') === 'barang' || request('page') === 'kategori' || request('page') === 'promo' ? 'active' : '' }}">
                     <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
                         <i class="fas fa-fw fa-database"></i>
                         <span>Data Master</span>
                     </a>
-                    <div id="collapseTwo" class="collapse {{ request('page') === 'barang' || request('page') === 'kategori' ? 'show' : '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div id="collapseTwo" class="collapse {{ request('page') === 'barang' || request('page') === 'kategori' || request('page') === 'promo' ? 'show' : '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                         <div class="py-2 collapse-inner rounded">
                             <a class="collapse-item {{ request('page') === 'barang' ? 'active' : '' }}" href="{{ route('dashboard', ['page' => 'barang']) }}">Barang</a>
                             <a class="collapse-item {{ request('page') === 'kategori' ? 'active' : '' }}" href="{{ route('dashboard', ['page' => 'kategori']) }}">Kategori</a>
+                            <a class="collapse-item {{ request('page') === 'promo' ? 'active' : '' }}" href="{{ route('dashboard', ['page' => 'promo']) }}">Promo</a>
                         </div>
                     </div>
                 </li>

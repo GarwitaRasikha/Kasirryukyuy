@@ -55,6 +55,32 @@ if (!empty($_SESSION['admin'])) {
             $kategori_id = $config->lastInsertId();
         }
 
+        $deskripsi = trim(htmlentities($_POST['deskripsi']));
+        $nama_file = null;
+
+        if (!empty($_FILES['foto']['name'])) {
+            $allowedTypes = [
+                'image/png'   => 'png',
+                'image/jpeg'  => 'jpg',
+                'image/gif'   => 'gif',
+                'image/jpg'   => 'jpeg',
+                'image/webp'  => 'webp'
+            ];
+            $filepath = $_FILES['foto']['tmp_name'];
+            if (file_exists($filepath)) {
+                $fileinfo = finfo_open(FILEINFO_MIME_TYPE);
+                $filetype = finfo_file($fileinfo, $filepath);
+                if (in_array($filetype, array_keys($allowedTypes)) && $_FILES['foto']['error'] === 0 && round($_FILES['foto']['size'] / 1024) <= 4096) {
+                    $dir = '../../assets/img/barang/';
+                    if (!is_dir($dir)) {
+                        mkdir($dir, 0777, true);
+                    }
+                    $nama_file = time() . '_' . basename($_FILES['foto']['name']);
+                    move_uploaded_file($filepath, $dir . $nama_file);
+                }
+            }
+        }
+
         $data[] = $id;
         $data[] = $kategori_id;
         $data[] = $nama;
@@ -64,8 +90,11 @@ if (!empty($_SESSION['admin'])) {
         $data[] = $satuan;
         $data[] = $stok;
         $data[] = $tgl;
-        $sql = 'INSERT INTO barang (id_barang,id_kategori,nama_barang,merk,harga_beli,harga_jual,satuan_barang,stok,tgl_input) 
-			    VALUES (?,?,?,?,?,?,?,?,?) ';
+        $data[] = $nama_file;
+        $data[] = $deskripsi;
+        
+        $sql = 'INSERT INTO barang (id_barang,id_kategori,nama_barang,merk,harga_beli,harga_jual,satuan_barang,stok,tgl_input,gambar,deskripsi) 
+			    VALUES (?,?,?,?,?,?,?,?,?,?,?) ';
         $row = $config -> prepare($sql);
         $row -> execute($data);
         echo '<script>window.location="../../dashboard.php?page=barang&success=tambah-data"</script>';
@@ -83,7 +112,21 @@ if (!empty($_SESSION['admin'])) {
         if ($hsl['stok'] > 0) {
             $kasir =  $_GET['id_kasir'];
             $jumlah = 1;
-            $total = $hsl['harga_jual'];
+            
+            // Check for active promotions
+            $today = date('Y-m-d');
+            $sql_promo = "SELECT * FROM promo WHERE status_promo = 1 AND tanggal_mulai <= ? AND tanggal_selesai >= ? AND (id_barang = ? OR id_barang IS NULL) ORDER BY id_barang DESC, nilai_promo DESC LIMIT 1";
+            $row_promo = $config->prepare($sql_promo);
+            $row_promo->execute([$today, $today, $id]);
+            $promo = $row_promo->fetch();
+
+            $harga_jual = $hsl['harga_jual'];
+            if ($promo) {
+                $harga_jual = $harga_jual - $promo['nilai_promo'];
+                if ($harga_jual < 0) $harga_jual = 0;
+            }
+
+            $total = $harga_jual * $jumlah;
             $tgl = date("j F Y, G:i");
 
             $data1[] = $id;
@@ -117,5 +160,31 @@ if (!empty($_SESSION['admin'])) {
             </body>
             </html>';
         }
+    }
+
+    if (!empty($_GET['promo'])) {
+        $nama_promo = htmlentities($_POST['nama_promo']);
+        $tipe_promo = htmlentities($_POST['tipe_promo']);
+        $nilai_promo = htmlentities($_POST['nilai_promo']);
+        $tanggal_mulai = htmlentities($_POST['tanggal_mulai']);
+        $tanggal_selesai = htmlentities($_POST['tanggal_selesai']);
+        $id_barang = !empty($_POST['id_barang']) ? htmlentities($_POST['id_barang']) : null;
+        $status_promo = isset($_POST['status_promo']) ? (int)$_POST['status_promo'] : 1;
+
+        $data = [
+            $nama_promo,
+            $tipe_promo,
+            $nilai_promo,
+            $tanggal_mulai,
+            $tanggal_selesai,
+            $id_barang,
+            $status_promo
+        ];
+
+        $sql = 'INSERT INTO promo (nama_promo, tipe_promo, nilai_promo, tanggal_mulai, tanggal_selesai, id_barang, status_promo, created_at, updated_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())';
+        $row = $config->prepare($sql);
+        $row->execute($data);
+        echo '<script>window.location="../../dashboard.php?page=promo&success=tambah-data"</script>';
     }
 }

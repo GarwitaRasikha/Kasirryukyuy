@@ -55,7 +55,17 @@
                             <td>{{ $key + 1 }}</td>
                             <td class="fw-bold" style="color: #c084fc;">{{ $isi->id_barang }}</td>
                             <td>{{ $isi->nama_kategori }}</td>
-                            <td class="fw-semibold text-white">{{ $isi->nama_barang }}</td>
+                            <td class="fw-semibold text-white">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{{ $isi->gambar ? asset('assets/img/barang/' . $isi->gambar) : asset('assets/img/barang/default.png') }}" class="rounded-3" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                                    <div>
+                                        <span class="d-block">{{ $isi->nama_barang }}</span>
+                                        @if(!empty($isi->deskripsi))
+                                            <small class="text-white-50 d-block fw-normal" style="font-size: 0.75rem;">{{ \Illuminate\Support\Str::limit($isi->deskripsi, 40) }}</small>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
                             <td>{{ $isi->merk }}</td>
                             <td>
                                 @if((int)$isi->stok === 0)
@@ -112,7 +122,7 @@
                 <h5 class="modal-title fw-bold text-white"><i class="fa fa-plus me-2"></i>Tambah Barang</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="/fungsi/tambah/tambah.php?barang=tambah" method="POST">
+            <form action="/fungsi/tambah/tambah.php?barang=tambah" method="POST" enctype="multipart/form-data">
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label text-white-50">ID Barang</label>
@@ -154,6 +164,14 @@
                     <div class="mb-3">
                         <label class="form-label text-white-50">Stok Awal</label>
                         <input type="number" required placeholder="Stok" class="form-control" name="stok">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50">Gambar Produk</label>
+                        <input type="file" class="form-control" name="foto" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50">Deskripsi Produk</label>
+                        <textarea class="form-control" name="deskripsi" rows="3" placeholder="Masukkan deskripsi produk..."></textarea>
                     </div>
                     <input type="hidden" name="tgl" value="{{ date('j F Y, G:i') }}">
                 </div>

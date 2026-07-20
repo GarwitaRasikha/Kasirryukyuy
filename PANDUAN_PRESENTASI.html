@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PANDUAN_PRESENTASI.md</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 0 2rem; line-height: 1.8; color: #333; }
+    h1,h2,h3,h4,h5,h6 { color: #111; margin: 1.5rem 0 0.5rem; }
+    h1 { font-size: 2rem; border-bottom: 2px solid #ddd; padding-bottom: 0.3rem; }
+    h2 { font-size: 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.2rem; }
+    a { color: #0366d6; }
+    code { background: #f6f8fa; padding: 0.1em 0.4em; border-radius: 3px; font-family: monospace; }
+    pre { background: #f6f8fa; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+    pre code { background: none; padding: 0; }
+    blockquote { border-left: 3px solid #aaa; padding: 0.5rem 1rem; color: #555; margin: 1rem 0; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th,td { border: 1px solid #ddd; padding: 0.5rem 0.75rem; }
+    th { background: #f3f3f3; }
+    img { max-width: 100%; }
+  </style>
+</head>
+<body><h1>Panduan Kode Visual SmartKasir (Persiapan Ujian / Presentasi Dosen)</h1>
+<p>Panduan ini dibuat khusus untuk mempermudah Anda menjelaskan letak file kodingan, kutipan kode (<em>snippets</em>), dan bagaimana melakukan perubahan (seperti teks, warna, dan data) pada halaman depan (<strong>Home</strong>) jika ditanya oleh dosen saat presentasi.</p>
+<hr>
+<h2>🎨 1. Kunci Utama Warna &amp; Tema (CSS Variables)</h2>
+<p>Semua warna ungu neon, gradasi, efek blur (glassmorphism), dan latar belakang gelap pada website diatur terpusat di satu file CSS utama:</p>
+<ul>
+<li><strong>Lokasi File:</strong> <a href="file:///c:/laragon/www/Kasirryukyuy/public/assets/css/global-overrides.css">global-overrides.css</a></li>
+</ul>
+<h3>Kutipan Kode Penting:</h3>
+<pre><code class="language-css">:root {
+    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); /* Warna Gradasi Ungu/Indigo */
+    --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); /* Warna Gradasi Biru */
+    --dark-bg: #0b0b0f; /* Warna Background Hitam/Gelap */
+    --card-bg: rgba(20, 20, 28, 0.45); /* Warna Background Transparan Card (Efek Glassmorphism) */
+    --border-color: rgba(255, 255, 255, 0.06); /* Warna Garis Batas Halus */
+}
+</code></pre>
+<p>💡 <strong>Cara Menjawab Pertanyaan Dosen:</strong></p>
+<blockquote>
+<p><em>&quot;Jika ingin mengganti warna tema website (misal dari ungu ke hijau), kita cukup mengubah nilai HEX pada <code>--primary-gradient</code> di baris 3 pada file <code>global-overrides.css</code> ini, maka seluruh tombol dan elemen bertema ungu di web akan otomatis berubah secara instan.&quot;</em></p>
+</blockquote>
+<hr>
+<h2>🚀 2. Hero Section (Screenshot 1)</h2>
+<p>Bagian paling atas yang berisi judul utama, sub-judul, tombol &quot;Mulai Sekarang&quot;, dan lencana bintang.</p>
+<ul>
+<li><strong>Lokasi File:</strong> <a href="file:///c:/laragon/www/Kasirryukyuy/resources/views/home.blade.php">home.blade.php</a> (Mulai dari Baris 201)</li>
+</ul>
+<h3>Kutipan Kode Penting:</h3>
+<pre><code class="language-html">&lt;section class=&quot;hero-section&quot;&gt;
+    ...
+    &lt;span class=&quot;badge badge-custom rounded-pill mb-4&quot;&gt;&lt;i class=&quot;fas fa-star me-2&quot;&gt;&lt;/i&gt;Sistem Kasir 3D #1 di Indonesia&lt;/span&gt;
+    &lt;h1 class=&quot;hero-title&quot;&gt;Revolusi Transaksi Digital Bisnis Anda&lt;/h1&gt;
+    &lt;p class=&quot;lead text-secondary mb-5 fs-5&quot;&gt;Tingkatkan efisiensi operasional dengan sistem kasir...&lt;/p&gt;
+    
+    &lt;div class=&quot;d-flex gap-3 flex-wrap&quot;&gt;
+        &lt;!-- Jika sudah login, tombol mengarah ke Dashboard. Jika belum, mengarah ke Login --&gt;
+        @if(session(&#39;admin&#39;))
+            &lt;a href=&quot;{{ route(&#39;dashboard&#39;) }}&quot; class=&quot;btn btn-primary-glow px-4 py-3 rounded-pill fw-bold&quot;&gt;Buka Dashboard&lt;/a&gt;
+        @else
+            &lt;a href=&quot;{{ route(&#39;login&#39;) }}&quot; class=&quot;btn btn-primary-glow px-4 py-3 rounded-pill fw-bold&quot;&gt;Mulai Sekarang&lt;/a&gt;
+        @endif
+        &lt;a href=&quot;{{ route(&#39;fitur&#39;) }}&quot; class=&quot;btn btn-outline-light rounded-pill px-4 py-3&quot;&gt;Pelajari Fitur&lt;/a&gt;
+    &lt;/div&gt;
+    ...
+&lt;/section&gt;
+</code></pre>
+<p>💡 <strong>Cara Menjawab Pertanyaan Dosen:</strong></p>
+<blockquote>
+<p><em>&quot;Teks judul diubah pada baris 207 <code>h1.hero-title</code>. Kondisi <code>@if(session(&#39;admin&#39;))</code> digunakan untuk mendeteksi apakah user sudah masuk ke sistem atau belum. Jika sudah masuk, tombol akan bertuliskan &#39;Buka Dashboard&#39; dan mengarah langsung ke halaman admin, jika belum akan bertuliskan &#39;Mulai Sekarang&#39; dan mengarah ke form login.&quot;</em></p>
+</blockquote>
+<hr>
+<h2>💳 3. Kartu Statistik &amp; Mockup Ringkasan (Screenshot 2)</h2>
+<p>Bagian kanan layar yang menampilkan replika kartu toko, jumlah omset, target penjualan, dan metrik stok.</p>
+<ul>
+<li><strong>Lokasi File:</strong> <a href="file:///c:/laragon/www/Kasirryukyuy/resources/views/home.blade.php">home.blade.php</a> (Mulai dari Baris 220)</li>
+</ul>
+<h3>Kutipan Kode Penting (Replika Kartu Toko):</h3>
+<pre><code class="language-html">&lt;div class=&quot;mock-card&quot;&gt;
+    &lt;div class=&quot;d-flex justify-content-between align-items-center mb-4&quot;&gt;
+        &lt;!-- Nama toko dimuat secara dinamis dari database --&gt;
+        &lt;span class=&quot;fw-bold fs-5&quot;&gt;&lt;i class=&quot;fas fa-store me-2&quot;&gt;&lt;/i&gt;{{ $toko-&gt;nama_toko }}&lt;/span&gt;
+        &lt;i class=&quot;fas fa-microchip fs-3 text-warning&quot;&gt;&lt;/i&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;fs-6 fw-bold tracking-widest mb-4&quot;&gt;&lt;i class=&quot;fas fa-phone-alt me-1&quot;&gt;&lt;/i&gt; {{ $toko-&gt;tlp }}&lt;/div&gt;
+    &lt;div class=&quot;d-flex justify-content-between text-sm opacity-75&quot;&gt;
+        &lt;div&gt;
+            &lt;div style=&quot;font-size: 0.7rem;&quot;&gt;PEMILIK TOKO&lt;/div&gt;
+            &lt;div class=&quot;fw-semibold&quot;&gt;{{ $toko-&gt;nama_pemilik }}&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;text-end&quot;&gt;
+            &lt;div style=&quot;font-size: 0.7rem;&quot;&gt;TOTAL TRANSAKSI&lt;/div&gt;
+            &lt;div class=&quot;fw-semibold&quot;&gt;{{ number_format($totalTransactions) }}&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<h3>Kutipan Kode Penting (Metrik Stok &amp; Omset):</h3>
+<pre><code class="language-html">&lt;div class=&quot;fs-3 fw-bold text-white mb-4&quot;&gt;Rp {{ number_format($totalSales, 0, &#39;,&#39;, &#39;.&#39;) }}&lt;/div&gt;
+...
+&lt;div class=&quot;fw-bold text-white&quot;&gt;Stok Terpantau&lt;/div&gt;
+&lt;div class=&quot;text-muted&quot; style=&quot;font-size: 0.75rem;&quot;&gt;
+    @if($lowStock &gt; 0)
+        {{ $lowStock }} Produk Stok Menipis (&lt;= 50)
+    @else
+        Semua Stok Aman
+    @endif
+&lt;/div&gt;
+</code></pre>
+<p>💡 <strong>Cara Menjawab Pertanyaan Dosen:</strong></p>
+<blockquote>
+<p>*&quot;Data kartu dan ringkasan omset di atas bersifat <strong>real-time (tidak hardcode)</strong>. Data diambil dari controller menggunakan sintaks blade double curly braces seperti <code>{{ $toko-&gt;nama_toko }}</code> untuk nama toko, <code>{{ number_format($totalSales) }}</code> untuk total nominal penjualan, dan kondisi logika <code>@if($lowStock &gt; 0)</code> untuk memantau apakah ada barang yang hampir habis di dalam gudang.&quot;*</p>
+</blockquote>
+<hr>
+<h2>⚡ 4. Bagian Keunggulan / Fitur (Screenshot 3)</h2>
+<p>Bagian tiga kolom kartu keunggulan seperti &quot;Transaksi Kilat 3D&quot;, &quot;Manajemen Stok Cerdas&quot;, dan &quot;Laporan Analitik&quot;.</p>
+<ul>
+<li><strong>Lokasi File:</strong> <a href="file:///c:/laragon/www/Kasirryukyuy/resources/views/home.blade.php">home.blade.php</a> (Mulai dari Baris 307)</li>
+</ul>
+<h3>Kutipan Kode Penting:</h3>
+<pre><code class="language-html">&lt;section class=&quot;section-padding&quot; style=&quot;background: #08080c; ...&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;text-center mb-5&quot; data-aos=&quot;fade-up&quot;&gt;
+            &lt;span class=&quot;badge badge-custom rounded-pill mb-2&quot;&gt;KEUNGGULAN&lt;/span&gt;
+            &lt;h2 class=&quot;section-title&quot;&gt;Fitur Masa Depan&lt;/h2&gt;
+            &lt;p class=&quot;text-secondary&quot;&gt;Semua yang Anda butuhkan untuk mengelola bisnis...&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;row g-4&quot;&gt;
+            &lt;div class=&quot;col-md-4&quot;&gt;
+                &lt;div class=&quot;feature-card-glow tilt-3d&quot;&gt;
+                    &lt;div class=&quot;icon-container&quot;&gt;&lt;i class=&quot;fas fa-bolt&quot;&gt;&lt;/i&gt;&lt;/div&gt;
+                    &lt;h4 class=&quot;fw-bold text-white mb-3&quot;&gt;Transaksi Kilat 3D&lt;/h4&gt;
+                    &lt;p class=&quot;text-secondary&quot;&gt;Proses checkout super cepat...&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            ...
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+</code></pre>
+<p>💡 <strong>Cara Menjawab Pertanyaan Dosen:</strong></p>
+<blockquote>
+<p><em>&quot;Layout tiga kolom dibentuk menggunakan sistem grid Bootstrap (<code>col-md-4</code> yang berarti 12 dibagi 3 kolom). Animasi slide saat di-scroll diatur oleh atribut <code>data-aos=\&quot;fade-up\&quot;</code> dari pustaka JavaScript AOS (Animate on Scroll).&quot;</em></p>
+</blockquote>
+<hr>
+<h2>🌐 5. Footer Proyek (Screenshot 4)</h2>
+<p>Bagian paling bawah halaman yang berisi profil ringkas toko, daftar menu navigasi cepat, bantuan, dan ikon media sosial.</p>
+<ul>
+<li><strong>Lokasi File:</strong> <a href="file:///c:/laragon/www/Kasirryukyuy/resources/views/layouts/site.blade.php">site.blade.php</a> (Mulai dari Baris 108)</li>
+</ul>
+<h3>Kutipan Kode Penting:</h3>
+<pre><code class="language-html">&lt;footer class=&quot;bg-dark text-white py-5&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;row g-4&quot;&gt;
+            &lt;div class=&quot;col-lg-4&quot;&gt;
+                &lt;h4 class=&quot;fw-bold text-primary mb-3&quot;&gt;&lt;i class=&quot;fas fa-cash-register me-2&quot;&gt;&lt;/i&gt;SmartKasir&lt;/h4&gt;
+                &lt;p class=&quot;text-white-50&quot;&gt;Solusi kasir modern untuk bisnis masa depan...&lt;/p&gt;
+            &lt;/div&gt;
+            ...
+            &lt;div class=&quot;col-lg-3&quot;&gt;
+                &lt;h5 class=&quot;fw-bold mb-3&quot;&gt;Sosial Media&lt;/h5&gt;
+                &lt;div class=&quot;d-flex gap-3&quot;&gt;
+                    &lt;a href=&quot;#&quot; class=&quot;text-white bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center rounded-circle&quot; 
+                       style=&quot;width: 40px; height: 40px; transition: all 0.3s;&quot; 
+                       onmouseover=&quot;this.style.background=&#39;#a855f7&#39;&quot; 
+                       onmouseout=&quot;this.style.background=&#39;rgba(108,117,125,0.25)&#39;&quot;&gt;
+                        &lt;i class=&quot;fab fa-facebook-f&quot;&gt;&lt;/i&gt;
+                    &lt;/a&gt;
+                    ...
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        ...
+    &lt;/div&gt;
+&lt;/footer&gt;
+</code></pre>
+<p>💡 <strong>Cara Menjawab Pertanyaan Dosen:</strong></p>
+<blockquote>
+<p><em>&quot;Footer dibungkus di dalam file layout bersama <code>site.blade.php</code> agar tampil konsisten di semua halaman publik (seperti halaman Fitur, Tentang, dan Kontak). Ikon media sosial menggunakan pustaka FontAwesome (seperti <code>fab fa-facebook-f</code>). Efek perubahan warna ungu saat kursor diarahkan ke ikon sosmed diatur menggunakan event handler inline JavaScript <code>onmouseover</code> dan <code>onmouseout</code> pada baris 134-136.&quot;</em></p>
+</blockquote>
+<hr>
+<h2>💾 6. Dari Mana Data Tersebut Berasal? (Controller Logic)</h2>
+<p>Semua data statistik real-time yang ada pada screenshot dikirim langsung dari database melalui Controller Laravel sebelum halaman HTML ditampilkan.</p>
+<ul>
+<li><strong>Lokasi File:</strong> <a href="file:///c:/laragon/www/Kasirryukyuy/app/Http/Controllers/SiteController.php">SiteController.php</a> (Mulai dari Baris 24)</li>
+</ul>
+<h3>Kutipan Kode Penting:</h3>
+<pre><code class="language-php">public function home()
+{
+    // Mengambil data pengaturan toko pertama dari database
+    $toko = DB::table(&#39;toko&#39;)-&gt;first();
+    
+    // Menghitung total penjualan sukses (nota)
+    $totalSales = DB::table(&#39;nota&#39;)-&gt;sum(&#39;total&#39;);
+    
+    // Menghitung total seluruh transaksi (berapa kali nota diinput)
+    $totalTransactions = DB::table(&#39;nota&#39;)-&gt;distinct(&#39;tanggal_input&#39;)-&gt;count(&#39;tanggal_input&#39;);
+    
+    // Menghitung barang dengan stok menipis (di bawah atau sama dengan 50 unit)
+    $lowStock = DB::table(&#39;barang&#39;)-&gt;whereRaw(&#39;CAST(stok AS SIGNED) &lt;= 50&#39;)-&gt;count();
+
+    // Mengirimkan variabel ke file view home.blade.php
+    return view(&#39;home&#39;, compact(&#39;toko&#39;, &#39;totalSales&#39;, &#39;totalTransactions&#39;, &#39;lowStock&#39;));
+}
+</code></pre>
+<p>💡 <strong>Cara Menjawab Pertanyaan Dosen:</strong></p>
+<blockquote>
+<p><em>&quot;Halaman utama memanggil fungsi <code>home()</code> pada <code>SiteController.php</code>. Fungsi ini melakukan query database menggunakan query builder Laravel <code>DB::table()</code> untuk menghitung total penjualan, menghitung transaksi, dan mencari stok kritis, lalu hasilnya dikirimkan ke file <code>home.blade.php</code> lewat fungsi <code>compact()</code>.&quot;</em></p>
+</blockquote>
+</body>
+</html>

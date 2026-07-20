@@ -57,4 +57,12 @@ if (!empty($_SESSION['admin'])) {
         $row -> execute();
         echo '<script>window.location="../../dashboard.php?page=laporan&remove=hapus"</script>';
     }
+
+    if (!empty(htmlentities($_GET['promo']))) {
+        $id = htmlentities($_GET['id']);
+        $sql = 'DELETE FROM promo WHERE id_promo=?';
+        $row = $config -> prepare($sql);
+        $row -> execute([$id]);
+        echo '<script>window.location="../../dashboard.php?page=promo&remove=hapus-data"</script>';
+    }
 }
